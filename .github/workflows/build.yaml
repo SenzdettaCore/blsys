@@ -1,0 +1,39 @@
+name: Build Go Tool (Linux Full Arch)
+
+on:
+  push:
+    branches: main
+
+jobs:
+  build:
+    name: Build for Linux (${{ matrix.arch }})
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [amd64, arm64, 386, arm, riscv64]
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+          check-latest: true
+
+      - name: Build Binary
+        env:
+          GOOS: linux
+          GOARCH: ${{ matrix.arch }}
+          GOARM: ${{ matrix.arch == 'arm' && '7' || '' }}
+        run: |
+          mkdir -p .artifact
+          go build -ldflags="-s -w" -trimpath -o .artifact/blsys-linux-${{ matrix.arch }} .
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: blsys-binary-linux-${{ matrix.arch }}
+          path: .artifact/
