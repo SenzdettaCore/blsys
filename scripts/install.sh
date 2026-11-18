@@ -74,7 +74,7 @@ fi
 source <(command blsys --codegen 'import')
 
 echo -e "\x1b[1;34m[*] \x1b[0mCall: \x1b[0;32mblsys::installer\x1b[0m"
-source "${__root__}/.blsys/installer.sh"
+source "${__root__}/.blsys/install.sh"
 blsys::installer "${@}"
 exit 0
 
