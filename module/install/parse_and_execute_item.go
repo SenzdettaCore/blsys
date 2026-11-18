@@ -86,7 +86,7 @@ func parseAndExecuteItem(
 
         if processedPkg == "" && allowSkip {
             fmt.Printf(
-                "%s-> %sSkipped...",
+                "%s-> %sSkipped...\n",
                 color.DG, color.N,
             )
             return 0
