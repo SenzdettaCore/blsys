@@ -57,7 +57,10 @@ func processInstallFile(filePath, binDir string) error {
             "%s[*] %sInstalling: %s%s%s\n",
             color.B, color.N, color.GG, line, color.N,
         )
-        parseAndExecuteItem(line, "", binDir)
+        code := parseAndExecuteItem(line, "", binDir)
+        if code > 0 {
+            os.Exit(code)
+        }
     }
 
     return nil
