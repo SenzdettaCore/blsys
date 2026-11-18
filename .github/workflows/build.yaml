@@ -1,14 +1,18 @@
-name: Build Go Tool (Linux Full Arch)
+name: Build and Commit Go Tool
 
 on:
   push:
     branches: main
+    paths-ignore:
+      - '.artifact/**'
+
+permissions:
+  contents: write
 
 jobs:
   build:
     name: Build for Linux (${{ matrix.arch }})
     runs-on: ubuntu-latest
-    
     strategy:
       matrix:
         arch: [amd64, arm64, 386, arm, riscv64]
@@ -32,8 +36,31 @@ jobs:
           mkdir -p .artifact
           go build -ldflags="-s -w" -trimpath -o .artifact/blsys-linux-${{ matrix.arch }} .
 
-      - name: Upload Artifacts
+      - name: Upload Temp Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: blsys-binary-linux-${{ matrix.arch }}
-          path: .artifact/
+          name: blsys-linux-${{ matrix.arch }}
+          path: .artifact/blsys-linux-${{ matrix.arch }}
+
+  commit-binaries:
+    name: Commit Binaries to Repo
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download All Binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: .artifact
+          merge-multiple: true
+
+      - name: Commit and Push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git pull --rebase origin main
+          git add -f .artifact/
+          git diff-index --quiet HEAD || git commit -m "update compiled binaries [skip ci]"
+          git push
